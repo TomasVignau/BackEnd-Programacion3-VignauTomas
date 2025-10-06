@@ -1,8 +1,9 @@
-import express from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import bcrypt from 'bcrypt'
 
 import User from '../schemas/user.js'
 import Role from '../schemas/role.js'
+import { CreateUserRequest } from '../types/index.js'
 
 const router = express.Router()
 
@@ -12,13 +13,20 @@ router.post('/', createUser)
 router.put('/:id', updateUser)
 router.delete('/:id', deleteUser)
 
-function toDate(input) {
-  const [day, month, year] = input.split('/')
-  return new Date(year, month, day)
+function toDate(input: string): Date {
+  const parts = input.split('/')
+  if (parts.length !== 3) {
+    throw new Error('Invalid date format. Expected DD/MM/YYYY')
+  }
+  const [day, month, year] = parts
+  if (!day || !month || !year) {
+    throw new Error('Invalid date format. Expected DD/MM/YYYY')
+  }
+  return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
 }
 
-async function getAllUsers(req, res, next) {
-  console.log('getAllUsers by user ', req.user._id)
+async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+  console.log('getAllUsers by user ', req.user?._id)
   try {
     const users = await User.find({ isActive: true }).populate('role')
     res.send(users)
@@ -27,18 +35,24 @@ async function getAllUsers(req, res, next) {
   }
 }
 
-async function getUserById(req, res, next) {
+async function getUserById(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   console.log('getUser with id: ', req.params.id)
 
   if (!req.params.id) {
     res.status(500).send('The param id is not defined')
+    return
   }
 
   try {
     const user = await User.findById(req.params.id).populate('role')
 
-    if (!user || user.length == 0) {
+    if (!user) {
       res.status(404).send('User not found')
+      return
     }
 
     res.send(user)
@@ -47,7 +61,11 @@ async function getUserById(req, res, next) {
   }
 }
 
-async function createUser(req, res, next) {
+async function createUser(
+  req: Request<Record<string, never>, unknown, CreateUserRequest>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   console.log('createUser: ', req.body)
 
   const user = req.body
@@ -56,13 +74,14 @@ async function createUser(req, res, next) {
     const role = await Role.findOne({ name: user.role })
     if (!role) {
       res.status(404).send('Role not found')
+      return
     }
 
     const passEncrypted = await bcrypt.hash(user.password, 10)
 
     const userCreated = await User.create({
       ...user,
-      bornDate: toDate(user.bornDate),
+      bornDate: user.bornDate ? toDate(user.bornDate.toString()) : undefined,
       password: passEncrypted,
       role: role._id,
     })
@@ -73,15 +92,21 @@ async function createUser(req, res, next) {
   }
 }
 
-async function updateUser(req, res, next) {
+async function updateUser(
+  req: Request<{ id: string }, unknown, Partial<CreateUserRequest>>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   console.log('updateUser with id: ', req.params.id)
 
   if (!req.params.id) {
-    return res.status(404).send('Parameter id not found')
+    res.status(404).send('Parameter id not found')
+    return
   }
 
-  if (!req.isAdmin() && req.params.id != req.user._id) {
-    return res.status(403).send('Unauthorized')
+  if (!req.isAdmin() && req.params.id !== req.user?._id) {
+    res.status(403).send('Unauthorized')
+    return
   }
 
   // The email can't be updated
@@ -92,7 +117,8 @@ async function updateUser(req, res, next) {
 
     if (!userToUpdate) {
       console.error('User not found')
-      return res.status(404).send('User not found')
+      res.status(404).send('User not found')
+      return
     }
 
     if (req.body.role) {
@@ -100,9 +126,10 @@ async function updateUser(req, res, next) {
 
       if (!newRole) {
         console.info('New role not found. Sending 400 to client')
-        return res.status(400).end()
+        res.status(400).end()
+        return
       }
-      req.body.role = newRole._id
+      req.body.role = newRole._id.toString()
     }
 
     if (req.body.password) {
@@ -129,11 +156,16 @@ async function updateUser(req, res, next) {
   }
 }
 
-async function deleteUser(req, res, next) {
+async function deleteUser(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   console.log('deleteUser with id: ', req.params.id)
 
   if (!req.params.id) {
     res.status(500).send('The param id is not defined')
+    return
   }
 
   try {
@@ -141,6 +173,7 @@ async function deleteUser(req, res, next) {
 
     if (!user) {
       res.status(404).send('User not found')
+      return
     }
 
     await User.deleteOne({ _id: user._id })
