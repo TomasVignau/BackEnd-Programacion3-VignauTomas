@@ -2,18 +2,33 @@ import jwt from 'jsonwebtoken'
 // import fs from 'fs'
 // import path from 'path'
 
-import Role from '../schemas/role.js'
+import Role from '../schemas/role'
+import { IUser, JWTPayload } from '../types/index'
 
-async function generateUserToken(req, user) {
+interface UserResponse {
+  _id: string
+  role: string
+  email: string
+  firstName: string
+  lastName: string
+}
+
+interface TokenResponse {
+  token: string
+  user: UserResponse
+}
+
+async function generateUserToken(req: unknown, user: IUser): Promise<TokenResponse> {
   const role = await Role.findById(user.role).exec()
 
-  const payload = {
-    _id: user._id,
-    role: role.name,
+  if (!role) {
+    throw new Error('Role not found')
   }
 
-  const userResponse = {
-    _id: user._id,
+  const payload: JWTPayload = { _id: user._id.toString(), email: user.email, role: role.name }
+
+  const userResponse: UserResponse = {
+    _id: user._id.toString(),
     role: role.name,
     email: user.email,
     firstName: user.firstName,
