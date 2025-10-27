@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 import bcrypt from 'bcrypt'
-import { IUser, GovernmentIdType } from '../types/index.js'
+import { IUser, GovernmentIdType } from '../types/index'
 
 const { ObjectId } = Schema.Types
 

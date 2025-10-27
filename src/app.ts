@@ -3,11 +3,11 @@ import cookieParser from 'cookie-parser'
 import logger from 'morgan'
 import cors from 'cors'
 
-import statusRouter from './routes/status.js'
-import authRouter from './routes/auth.js'
-import userRouter from './routes/user.js'
-import authentication from './middlewares/authentication.js'
-import authorization from './middlewares/authorization.js'
+import statusRouter from './routes/status'
+import authRouter from './routes/auth'
+import userRouter from './routes/user'
+import authentication from './middlewares/authentication'
+import authorization from './middlewares/authorization'
 
 const app = express()
 

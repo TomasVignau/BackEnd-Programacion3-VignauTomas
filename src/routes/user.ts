@@ -1,9 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express'
 import bcrypt from 'bcrypt'
 
-import User from '../schemas/user.js'
-import Role from '../schemas/role.js'
-import { CreateUserRequest } from '../types/index.js'
+import User from '../schemas/user'
+import Role from '../schemas/role'
+import { CreateUserRequest } from '../types/index'
 
 const router = express.Router()
 

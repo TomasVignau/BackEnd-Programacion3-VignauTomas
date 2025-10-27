@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import createError from 'http-errors'
 import { Request, Response, NextFunction } from 'express'
-import { JWTPayload } from '../types/index.js'
+import { JWTPayload } from '../types/index'
 // import fs from 'fs'
 // import path from 'path'
 

@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
-import User from '../schemas/user.js'
-import generateUserToken from '../utils/generate-user-and-token.js'
-import { LoginRequest } from '../types/index.js'
+import User from '../schemas/user'
+import generateUserToken from '../utils/generate-user-and-token'
+import { LoginRequest } from '../types/index'
 
 const router = Router()
 

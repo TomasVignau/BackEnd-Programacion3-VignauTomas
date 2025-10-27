@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken'
 // import fs from 'fs'
 // import path from 'path'
 
-import Role from '../schemas/role.js'
-import { IUser, JWTPayload } from '../types/index.js'
+import Role from '../schemas/role'
+import { IUser, JWTPayload } from '../types/index'
 
 interface UserResponse {
   _id: string
