@@ -34,9 +34,11 @@ function authentication(req: Request, res: Response, next: NextFunction): void {
 
   try {
     // Unsecure alternative
-    const decoded = jwt.verify(token, 'base-api-express-generator', {
+    /*const decoded = jwt.verify(token, 'base-api-express-generator', {
       issuer: 'base-api-express-generator',
-    }) as JWTPayload
+    }) as JWTPayload*/
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JWTPayload
 
     // Correct alternative
     // const decoded = jwt.verify(token, publicKey, {
@@ -55,16 +57,16 @@ function authentication(req: Request, res: Response, next: NextFunction): void {
     next()
   } catch (err) {
     const error = err as Error
-    if (error.message === 'invalid algorithm' || error.message === 'invalid signature') {
+    /*if (error.message === 'invalid algorithm' || error.message === 'invalid signature') {
       const ip =
         req.headers['x-forwarded-for'] ||
         (req as { connection?: { remoteAddress?: string } }).connection?.remoteAddress
       console.error(`Suspicious access attempt from ip=${ip} ${token}`)
-    }
+    }*/
     if (error.name === 'TokenExpiredError') {
       console.error('Expired token, sending 401 to client')
       res.sendStatus(401)
-      return
+      //return
     }
     next(new createError.Unauthorized(error.message))
   }

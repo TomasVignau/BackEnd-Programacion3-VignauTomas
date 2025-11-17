@@ -21,7 +21,13 @@ app.set('port', port)
 const server = http.createServer(app)
 
 const db_url = process.env.MONGO_URL || 'mongodb://127.0.0.1:27017/'
-const db_name = process.env.MONGO_DB || 'test'
+const db_name = process.env.MONGO_DB_NAME || 'test'
+
+console.log("NODE_ENV:", process.env.NODE_ENV)
+console.log("Cargando .env desde:", env_path)
+console.log("MONGO_URL:", process.env.MONGO_URL)
+console.log("MONGO_DB:", process.env.MONGO_DB)
+
 
 // MongoDB database initialization
 initDatabase()

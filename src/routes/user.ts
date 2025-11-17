@@ -4,16 +4,20 @@ import bcrypt from 'bcrypt'
 import User from '../schemas/user'
 import Role from '../schemas/role'
 import { CreateUserRequest } from '../types/index'
+import authentication from '../middlewares/authentication'
+
+import { logger } from '../utils/logger'
+
 
 const router = express.Router()
 
-router.get('/', getAllUsers)
-router.get('/:id', getUserById)
+router.get('/', authentication, getAllUsers)
+router.get('/:id', authentication, getUserById)
 router.post('/', createUser)
-router.put('/:id', updateUser)
-router.delete('/:id', deleteUser)
+router.put('/:id', authentication, updateUser)
+router.delete('/:id', authentication, deleteUser)
 
-function toDate(input: string): Date {
+/*function toDate(input: string): Date {
   const parts = input.split('/')
   if (parts.length !== 3) {
     throw new Error('Invalid date format. Expected DD/MM/YYYY')
@@ -23,7 +27,7 @@ function toDate(input: string): Date {
     throw new Error('Invalid date format. Expected DD/MM/YYYY')
   }
   return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-}
+}*/
 
 async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
   console.log('getAllUsers by user ', req.user?._id)
@@ -44,6 +48,7 @@ async function getUserById(
 
   if (!req.params.id) {
     res.status(500).send('The param id is not defined')
+    logger.error("El parámetro ID no está definido")
     return
   }
 
@@ -52,6 +57,7 @@ async function getUserById(
 
     if (!user) {
       res.status(404).send('User not found')
+      logger.error("Usuario no encontrado")
       return
     }
 
@@ -74,16 +80,16 @@ async function createUser(
     const role = await Role.findOne({ name: user.role })
     if (!role) {
       res.status(404).send('Role not found')
+      logger.error("Role no encontrado")
       return
     }
 
     const passEncrypted = await bcrypt.hash(user.password, 10)
 
     const userCreated = await User.create({
-      ...user,
-      bornDate: user.bornDate ? toDate(user.bornDate.toString()) : undefined,
-      password: passEncrypted,
-      role: role._id,
+      ...user, // copia todo lo que vino del cliente
+      password: passEncrypted, // reemplaza la contraseña por la encriptada
+      role: role._id, // reemplaza el texto del rol por el ObjectId
     })
 
     res.send(userCreated)
@@ -101,11 +107,13 @@ async function updateUser(
 
   if (!req.params.id) {
     res.status(404).send('Parameter id not found')
+    logger.error("El parámetro ID no está definido")
     return
   }
 
   if (!req.isAdmin?.() && req.params.id !== req.user?._id) {
     res.status(403).send('Unauthorized')
+    logger.error("Sin autorización")
     return
   }
 
@@ -118,6 +126,7 @@ async function updateUser(
     if (!userToUpdate) {
       console.error('User not found')
       res.status(404).send('User not found')
+      logger.error("Usuario no encontrado")
       return
     }
 
@@ -127,6 +136,7 @@ async function updateUser(
       if (!newRole) {
         console.info('New role not found. Sending 400 to client')
         res.status(400).end()
+        logger.error("No funciona el nuevo rol")
         return
       }
       req.body.role = newRole._id.toString()
@@ -165,6 +175,7 @@ async function deleteUser(
 
   if (!req.params.id) {
     res.status(500).send('The param id is not defined')
+    logger.error("El parámetro ID no está definido")
     return
   }
 
@@ -173,6 +184,7 @@ async function deleteUser(
 
     if (!user) {
       res.status(404).send('User not found')
+      logger.error("Usuario no encotrado")
       return
     }
 
@@ -184,4 +196,6 @@ async function deleteUser(
   }
 }
 
+export { getUserById }
+export { createUser }
 export default router

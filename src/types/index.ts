@@ -6,12 +6,11 @@ export interface IUser extends Document {
   email: string
   password: string
   role: Types.ObjectId
-  firstName: string
-  lastName: string
+  name: string
   phone?: string
   governmentId?: { type: GovernmentIdType; number: string }
-  bornDate?: Date
   isActive: boolean
+  description: string
   checkPassword(potentialPassword: string): Promise<{ isOk: boolean; isLocked: boolean }>
 }
 
@@ -24,6 +23,52 @@ export interface IRole extends Document {
   description?: string
   permissions: string[]
   isActive: boolean
+}
+
+// Challenge Types
+export interface IChallenge extends Document {
+  _id: Types.ObjectId
+  title: string
+  description?: string
+  idCompany: Types.ObjectId | IUser
+  category: string
+  publicationDate: Date
+  expirationDate: Date
+  isActive: boolean
+}
+
+// Proposal Types
+export interface IProposal extends Document {
+  _id: Types.ObjectId
+  title: string
+  description?: string
+  idCompany: Types.ObjectId
+  idChallenge: Types.ObjectId
+  idUser: Types.ObjectId
+  category: string
+  publicationDate: Date
+  state: string
+  valoration: number
+  feedback?: string
+  isActive: boolean
+}
+
+// Follow Types
+export interface IFollow extends Document {
+  _id: Types.ObjectId
+  idEmprendedor: Types.ObjectId | IUser
+  idCompany: Types.ObjectId | IUser 
+}
+
+// Notifications Types
+export interface INotifications extends Document {
+  _id: Types.ObjectId
+  idEmprendedor: Types.ObjectId | IUser
+  idCompany: Types.ObjectId | IUser
+  idChallenge?: Types.ObjectId | IChallenge
+  idProposal?: Types.ObjectId | IProposal
+  typeNotification: string
+  unview: boolean
 }
 
 // JWT Payload
@@ -63,11 +108,42 @@ export interface CreateUserRequest {
   email: string
   password: string
   role: string
-  firstName: string
-  lastName: string
+  name: string
   phone?: string
   governmentId?: { type: GovernmentIdType; number: string }
   bornDate?: Date
+}
+
+export interface CreateChallengeRequest {
+  title: string
+  description?: string
+  idCompany: string
+  category: string
+  publicationDate: Date
+  expirationDate: Date
+}
+
+export interface CreateProposalRequest {
+  title: string
+  description?: string
+  idCompany: string
+  idChallenge: string
+  idUser: string
+  category: string
+  publicationDate: Date
+}
+
+export interface CreateFollowRequest {
+  idEmprendedor: string
+  idCompany: string
+}
+
+export interface CreateNotificationRequest {
+  idEmprendedor: string
+  idCompany: string
+  typeNotification: string
+  idChallenge?: string
+  idProposal?: string
 }
 
 // Environment Variables

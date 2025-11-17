@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 import User from '../schemas/user'
 import generateUserToken from '../utils/generate-user-and-token'
 import { LoginRequest } from '../types/index'
+import { logger } from '../utils/logger'
 
 const router = Router()
 
@@ -12,48 +13,45 @@ async function createUserToken(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  console.log(`Creating user token for ${req.body.email}`)
 
+  // Validaciones básicas (errores del cliente)
   if (!req.body.email) {
-    console.error('Missing email parameter. Sending 400 to client')
-    res.status(400).end()
-    return
+    logger.error('Login fallido: falta el email', { body: req.body })
+    return void res.status(400).end()
   }
 
   if (!req.body.password) {
-    console.error('Missing password parameter. Sending 400 to client')
-    res.status(400).end()
-    return
+    logger.error('Login fallido: falta la contraseña', { body: req.body })
+    return void res.status(400).end()
   }
 
   try {
     const user = await User.findOne({ email: req.body.email }, '+password')
 
     if (!user) {
-      console.error('User not found. Sending 404 to client')
-      res.status(401).end()
-      return
+      logger.error('Login fallido: usuario no encontrado', { email: req.body.email })
+      return void res.status(404).end()
     }
 
-    console.log('Checking user password')
     const result = await user.checkPassword(req.body.password)
 
     if (result.isLocked) {
-      console.error('User is locked. Sending 400 (Locked) to client')
-      res.status(400).end()
-      return
+      logger.error('Login fallido: usuario bloqueado', { email: req.body.email })
+      return void res.status(400).end()
     }
 
     if (!result.isOk) {
-      console.error('User password is invalid. Sending 401 to client')
-      res.status(401).end()
-      return
+      logger.error('Login fallido: contraseña incorrecta', { email: req.body.email })
+      return void res.status(401).end()
     }
 
+    // Éxito (no se loguea nada porque no es error)
     const response = await generateUserToken(req, user)
-
     res.status(201).json(response)
+
   } catch (err) {
+    // Errores inesperados: se loguean como error
+    logger.error('Error interno al procesar login', { error: err })
     next(err)
   }
 }

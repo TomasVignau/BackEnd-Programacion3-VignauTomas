@@ -9,8 +9,7 @@ interface UserResponse {
   _id: string
   role: string
   email: string
-  firstName: string
-  lastName: string
+  name: string
 }
 
 interface TokenResponse {
@@ -31,14 +30,18 @@ async function generateUserToken(req: unknown, user: IUser): Promise<TokenRespon
     _id: user._id.toString(),
     role: role.name,
     email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
+    name: user.name,
   }
 
   // const privateKey = fs.readFileSync(path.join(__dirname, `../keys/base-api-express-generator.pem`))
 
   // Unsecure alternative
-  const token = jwt.sign(payload, 'base-api-express-generator', {
+  /*const token = jwt.sign(payload, 'base-api-express-generator', {
+    subject: user._id.toString(),
+    issuer: 'base-api-express-generator',
+  })*/
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
     subject: user._id.toString(),
     issuer: 'base-api-express-generator',
   })
