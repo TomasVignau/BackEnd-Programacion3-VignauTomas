@@ -48,8 +48,7 @@ export interface IProposal extends Document {
   category: string
   publicationDate: Date
   state: string
-  valoration: number
-  feedback?: string
+  links?: string[]
   isActive: boolean
 }
 
@@ -57,7 +56,7 @@ export interface IProposal extends Document {
 export interface IFollow extends Document {
   _id: Types.ObjectId
   idEmprendedor: Types.ObjectId | IUser
-  idCompany: Types.ObjectId | IUser 
+  idCompany: Types.ObjectId | IUser
 }
 
 // Notifications Types

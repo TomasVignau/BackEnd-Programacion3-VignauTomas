@@ -12,8 +12,7 @@ const initialProposals = [
     category: 'Energía',
     publicationDate: new Date('2025-03-01'),
     state: 'pendiente',
-    valoration: 4,
-    feedback: 'Propuesta prometedora',
+    links: ['https://example.com/panel-solar'], // nuevo campo
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -28,8 +27,7 @@ const initialProposals = [
     category: 'Sustentabilidad',
     publicationDate: new Date('2025-03-10'),
     state: 'aceptada',
-    valoration: 5,
-    feedback: 'Excelente innovación',
+    links: ['https://example.com/biodegradable'], // nuevo campo
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
